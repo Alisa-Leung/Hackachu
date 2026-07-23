@@ -16,3 +16,19 @@ while running:
 
 pygame.quit()
 sys.exit()
+
+# game loop
+
+# initial bet
+# 3 cards dealt are dealt to each person
+# players look at cards
+# 2nd bet
+# 
+
+# game loop
+# pay initial amt
+# 3 cards dealt
+# cards in middle face down
+# initial bet
+# show one card
+# 
