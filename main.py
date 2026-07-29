@@ -1,17 +1,136 @@
 import pygame
 import sys
+import os
+import random
 
 pygame.init()
 
-screen = pygame.display.set_mode([800, 600])
+gameWidth = 800
+gameHeight = 600
 
-running = True
+screen = pygame.display.set_mode([gameWidth, gameHeight])
+isPlaying = True
+gameState = "start"
+playPressed = False
 
-while running:
+icon = pygame.image.load('assets/cardBack.png')
+pygame.display.set_icon(icon)
+
+def loadImages():
+    images = {}
+    for fileName in os.listdir("assets/"):
+        if fileName.endswith('.png'):
+            path = os.path.join("assets/", fileName)
+            image = pygame.image.load(path).convert_alpha()
+            key = os.path.splitext(fileName)[0]
+            images[key] = image
+    return images
+
+def scaleImage(image, mult):
+    return pygame.transform.scale_by(image, mult)
+
+images = loadImages()
+playRect = scaleImage(images['buttonUnpressed'], 3).get_rect(center=(gameWidth//2, gameHeight//2))
+titleFont = pygame.font.Font("assets/pixelify.ttf", 70)
+textFont = pygame.font.Font("assets/pixelify.ttf", 30)
+
+bgY1 = 0
+bgY2 = -gameHeight
+
+def scrollBackground():
+    bgSpeed = 0.125
+    global bgY1, bgY2
+    bg = pygame.transform.scale(images['background'], (gameWidth, gameHeight))
+    screen.blit(bg, (0, bgY1))
+    screen.blit(bg, (0, bgY2))
+    bgY1 += bgSpeed
+    bgY2 += bgSpeed
+    if bgY1 >= gameHeight:
+        bgY1 = -gameHeight
+    if bgY2 >= gameHeight:
+        bgY2 = -gameHeight
+
+class Card:
+    isFlipped = False
+    def __init__(self, name, image):
+        self.name = name
+        self.image = image
+    def setFlipped(self, isFlipped):
+        self.isFlipped = isFlipped
+
+def createDeck():
+    global deck
+    deck = []
+    for i in range(2):
+        for key, value in images.items():
+            if "card_" in key:
+                card = Card(key.replace("card_", "",), value)
+                deck.append(card)
+    random.shuffle(deck)
+    deckTable = []
+    cardIndex = 0
+    for row in range(4):
+        deckRow = []
+        for column in range(4):
+            deckRow.append(deck[cardIndex])
+            cardIndex += 1
+        deckTable.append(deckRow)
+    deck = deckTable
+
+def displayCards():
+    for card in deck:
+        # cardRect = scaleImage(images['buttonUnpressed'], 3).get_rect(center=(gameWidth//2, gameHeight//2))
+
+def startScreen():
+    scrollBackground()
+    currentButton = scaleImage((images['buttonPressed'] if playPressed else images['buttonUnpressed']), 3)
+    screen.blit(currentButton, playRect)
+
+def introScreen():
+    screen.fill((112, 154, 209))
+    introLines = [
+        "Welcome to my game!",
+        "Let's test your memory.",
+        "Find the matching cards",
+        "with the least tries possible!",
+        "Click anywhere to begin!"
+    ]
+    for i, line in enumerate(introLines):
+        introText = textFont.render(line, True, (47, 54, 153))
+        introRect = introText.get_rect(center=(gameWidth//2, 100 + i * 100))
+        screen.blit(introText, introRect)
+
+def playScreen():
+    screen.fill((112, 154, 209))
+
+
+def draw():
+    match gameState:
+        case "start":
+            startScreen()
+        case "intro":
+            introScreen()
+        case "play":
+            playScreen()
+
+while isPlaying:
+    mousePos = pygame.mouse.get_pos()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
-    screen.fill((255, 255, 255))
+            isPlaying = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if gameState == "start":
+                if playRect.collidepoint(mousePos):
+                    playPressed = True
+            if gameState == "intro":
+                createDeck()
+                gameState = "play"
+        if event.type == pygame.MOUSEBUTTONUP:
+            if gameState == "start" and playPressed:
+                if playRect.collidepoint(mousePos):
+                    playPressed = False
+                    gameState = "intro"
+    draw()
     pygame.display.flip()
 
 pygame.quit()
@@ -31,4 +150,10 @@ sys.exit()
 # cards in middle face down
 # initial bet
 # show one card
-# 
+
+# percentages
+# 15 cards total
+# to do: 2 hits
+# 2 cool cards --> full art items
+# 6 item cards 
+# to do: 1 energy card --> but then u gotta do all of em
