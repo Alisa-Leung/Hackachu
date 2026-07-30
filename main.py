@@ -51,10 +51,11 @@ def scrollBackground():
         bgY2 = -gameHeight
 
 class Card:
-    isFlipped = False
     def __init__(self, name, image):
         self.name = name
         self.image = image
+        self.rect = None  
+        self.isFlipped = False
     def setFlipped(self, isFlipped):
         self.isFlipped = isFlipped
 
@@ -76,10 +77,30 @@ def createDeck():
             cardIndex += 1
         deckTable.append(deckRow)
     deck = deckTable
+    scale = 4
+    padding = 25
+    cardBack = scaleImage(images["cardBack"], scale)
+    cardWidth = cardBack.get_width()
+    cardHeight = cardBack.get_height()
+    totalWidth = 4 * cardWidth + 3 * padding
+    totalHeight = 4 * cardHeight + 3 * padding
+    startX = (gameWidth - totalWidth) // 2
+    startY = (gameHeight - totalHeight) // 2
+    for row in range(4):
+        for column in range(4):
+            x = startX + column * (cardWidth + padding)
+            y = startY + row * (cardHeight + padding)
+            deck[row][column].rect = pygame.Rect(x, y, cardWidth, cardHeight)
 
 def displayCards():
-    for card in deck:
-        # cardRect = scaleImage(images['buttonUnpressed'], 3).get_rect(center=(gameWidth//2, gameHeight//2))
+    scale = 4
+    for row in deck:
+        for card in row:
+            if card.isFlipped:
+                image = scaleImage(card.image, scale)
+            else:
+                image = scaleImage(images["cardBack"], scale)
+            screen.blit(image, card.rect)
 
 def startScreen():
     scrollBackground()
@@ -102,7 +123,7 @@ def introScreen():
 
 def playScreen():
     screen.fill((112, 154, 209))
-
+    displayCards()
 
 def draw():
     match gameState:
@@ -125,6 +146,11 @@ while isPlaying:
             if gameState == "intro":
                 createDeck()
                 gameState = "play"
+            if gameState == "play":
+                for row in deck:
+                    for card in row:
+                        if card.rect.collidepoint(event.pos):
+                            card.setFlipped(True)
         if event.type == pygame.MOUSEBUTTONUP:
             if gameState == "start" and playPressed:
                 if playRect.collidepoint(mousePos):
