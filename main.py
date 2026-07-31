@@ -10,8 +10,8 @@ gameHeight = 600
 
 screen = pygame.display.set_mode([gameWidth, gameHeight])
 
-isPlaying = True
 gameState = "start"
+running = True
 playPressed = False
 firstCard = None
 secondCard = None
@@ -65,7 +65,7 @@ class Card:
     def __init__(self, name, image):
         self.name = name
         self.image = image
-        self.rect = None  
+        self.rect = None
         self.isFlipped = False
         self.isMatched = False
     def setFlipped(self, isFlipped):
@@ -125,7 +125,7 @@ def displayCards():
         pygame.mouse.set_cursor(newCursor)
         currentCursor = newCursor
 
-def checkCards(card):
+def checkCards(event, card):
     global locked, flipBackTime, firstCard, secondCard, matches, tries
     if card.rect.collidepoint(event.pos) and not card.isFlipped and not card.isMatched:
         card.setFlipped(True)
@@ -211,11 +211,11 @@ def draw():
         case "win":
             winScreen()
 
-while isPlaying:
+while running:
     mousePos = pygame.mouse.get_pos()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            isPlaying = False
+            running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             if gameState == "start":
                 if playRect.collidepoint(mousePos):
@@ -223,7 +223,7 @@ while isPlaying:
             if gameState == "play" and not locked:
                 for row in deck:
                     for card in row:
-                        checkCards(card)
+                        checkCards(event, card)
         if event.type == pygame.MOUSEBUTTONUP:
             if gameState == "start" and playPressed:
                 if playRect.collidepoint(mousePos):
@@ -249,6 +249,3 @@ while isPlaying:
         gameState = "win"
     draw()
     pygame.display.flip()
-
-pygame.quit()
-sys.exit()
