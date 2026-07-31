@@ -23,6 +23,7 @@ startTime = 0
 elapsedTime = 0
 currentCursor = pygame.SYSTEM_CURSOR_ARROW
 
+pygame.display.set_caption("Poke Pair")
 icon = pygame.image.load('assets/cardBack.png')
 pygame.display.set_icon(icon)
 
